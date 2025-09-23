@@ -1,0 +1,63 @@
+Group by and having clause:
+===========================
+the GROUP BY clause is used to arrange rows that have the same values in specified columns into groups
+
+
+1. count employees in each dept
+select department, count(*) from employees group by department;
+
+2. get the avg salary per department
+select avg(salary) from employees group by department;
+
+3. heighest and lowest salary.
+select max(salary),min(salary) from employees group by department;
+
+4. count employees per dept and joining year
+select count(*) from employees group by department, year(joining_date);
+
+5. order departments by the heighest avg salary.
+
+select department, avg(salary) as avg_sal
+from employees
+group by department
+order by avg_sal desc;
+
+6. select *,
+case
+	when salery<6000 then 'low salary'
+	when salery between 6000 and 7000 then 'medium salary'
+	else 'highsalary'
+end as salary_range
+from employees;
+
+
+select count(*),
+case
+	when salery<6000 then 'low salary'
+	when salery between 6000 and 7000 then 'medium salary'
+	else 'highsalary'
+end as salary_range
+from employees 
+group by salary_range;
+
+
+Having:
+=======
+1. find departments wit more than 2 employees.
+
+select department, count(*) from employees group by department ;
+select department, count(*)as total from employees group by department wehere total>2;
+* you will get error because you can't use wher after group by.
+
+oder of clause:
+===============
+select
+from
+where(filter individual rows before grouping)
+group by
+having(filter groups afetr theyare created)
+order by;
+
+
+select department, count(*)as total from employees group by department wehere having total>2;
+select department, count(*)as total from employees group by department wehere having total>2 and avg_sal>40000;

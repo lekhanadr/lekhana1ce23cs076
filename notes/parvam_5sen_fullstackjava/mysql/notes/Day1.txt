@@ -1,0 +1,666 @@
+Introduction to mysql:
+======================
+* MySQL is a popular open-source relational database management system (RDBMS).
+* It stores structured data in tables (rows/columns) and uses SQL (Structured Query Language) to create, read, update and delete data.
+
+Key concepts:
+=============
+* Server vs client: MySQL server stores data; clients (mysql CLI, Workbench, apps) connect to run queries.
+* Storage engines: InnoDB (transactions, FK support) and MyISAM (no transactions). Use InnoDB for most apps.
+* Relational model: tables with keys and relationships (foreign keys).
+
+Example schema (we’ll use this throughout):
+===========================================
+We’ll create a small school schema: students, courses, enrollments.
+
+CREATE DATABASE school;
+
+USE school;
+
+CREATE TABLE students (
+  student_id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50),
+  email VARCHAR(100) UNIQUE,
+  dob DATE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE courses (
+  course_id INT AUTO_INCREMENT PRIMARY KEY,
+  course_name VARCHAR(100) NOT NULL,
+  credits TINYINT NOT NULL DEFAULT 3,
+  seats INT NOT NULL DEFAULT 30,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE enrollments (
+  enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  enroll_date DATE DEFAULT CURDATE(),
+  grade DECIMAL(4,2),
+  CONSTRAINT fk_enroll_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+  CONSTRAINT fk_enroll_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+  UNIQUE KEY ux_student_course (student_id, course_id)
+) ENGINE=InnoDB;
+
+Insert a few sample rows:
+=========================
+INSERT INTO students (first_name, last_name, email, dob) VALUES
+('Asha','Kumar','asha.k@example.com','2002-04-12'),
+('Ravi','Sharma','ravi.s@example.com','2001-10-20'),
+('Meera','Iyer','meera.i@example.com','2003-07-02');
+
+INSERT INTO courses (course_name, credits, seats) VALUES
+('Databases', 4, 25),
+('Data Structures', 3, 30),
+('Web Development', 3, 28);
+
+INSERT INTO enrollments (student_id, course_id, grade) VALUES
+(1,1,85.50),
+(2,1,78.00),
+(3,2,92.00);
+
+
+Data types (overview + when to use):
+====================================
+Numeric
+=======
+TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT — choose by expected range.
+
+DECIMAL(p,s) — exact fixed-point for money/grades (use DECIMAL for precision).
+
+FLOAT, DOUBLE — floating point; not ideal for money.
+
+String
+======
+CHAR(n) — fixed length.
+
+VARCHAR(n) — variable length (most common for names, emails).
+
+TEXT, MEDIUMTEXT, LONGTEXT — long text blobs.
+
+BLOB — binary data.
+
+ENUM('a','b'), SET(...) — limited values (use with care).
+
+Date/time
+=========
+DATE — date only (YYYY-MM-DD).
+
+TIME — time only.
+
+DATETIME — date + time, no timezone.
+
+TIMESTAMP — stores timezone-ish behavior; often used for last-updated stamps.
+
+YEAR — year only.
+
+Numeric types:
+==============
+-- integers (choose smallest that fits your range)
+CREATE TABLE example_ints (
+  tiny_signed TINYINT,           -- signed: -128 .. 127
+  tiny_unsigned TINYINT UNSIGNED,-- unsigned: 0 .. 255
+  small INT,                     -- SMALLINT: -32768 .. 32767
+  regular INT,                   -- INT: -2,147,483,648 .. 2,147,483,647
+  big BIGINT                     -- BIGINT: -9e18 .. 9e18 (use for very large ids)
+);
+
+-- decimals for money/precise values
+CREATE TABLE prices (
+  price DECIMAL(10,2) -- p=10 total digits, s=2 digits after decimal, e.g. 12345678.90
+);
+
+
+String types:
+=============
+CREATE TABLE example_strings (
+  c_fixed CHAR(10),            -- fixed-length, padded with spaces; good for codes
+  name VARCHAR(255),           -- variable length, common for names
+  short_bio TEXT,              -- up to 65,535 chars; good for descriptions
+  doc_blob BLOB,               -- binary data (files)
+  status ENUM('active','inactive','pending') -- small set of allowed values
+);
+
+-- Example: store only the prefix index on long varchar
+CREATE INDEX idx_name_prefix ON example_strings (name(30)); -- index on first 30 chars
+
+Date and time types:
+====================
+CREATE TABLE example_dates (
+  birth DATE,                -- 'YYYY-MM-DD'
+  login_time DATETIME,       -- 'YYYY-MM-DD HH:MM:SS' (wide range)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- auto set to now
+  duration TIME               -- store a time interval 'HH:MM:SS'
+);
+
+-- Formatting example
+SELECT DATE_FORMAT(birth, '%d-%b-%Y') AS pretty_birth FROM example_dates;
+-- Age in years:
+SELECT TIMESTAMPDIFF(YEAR, birth, CURDATE()) AS age_years FROM example_dates;
+
+KEYS & INDEXES — definitions, WHY, and step-by-step SQL:
+========================================================
+
+Primary Key: unique, non-null identifier for each row.
+
+Unique Key: enforces uniqueness on a column (or set of columns).
+
+Foreign Key: enforces referential integrity (rows must reference an existing parent).
+
+Composite Key: PK or unique key made of multiple columns.
+
+CREATE TABLE students (
+  student_id INT AUTO_INCREMENT PRIMARY KEY, -- primary key auto index created
+  email VARCHAR(150) UNIQUE,                 -- unique constraint + index
+  first_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE courses (
+  course_id INT AUTO_INCREMENT PRIMARY KEY,
+  course_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE enrollments (
+  enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  -- create foreign keys to enforce referential integrity
+  CONSTRAINT fk_enroll_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+  CONSTRAINT fk_enroll_course  FOREIGN KEY (course_id)  REFERENCES courses(course_id)  ON DELETE CASCADE,
+  -- enforce that a student cannot enroll in same course twice
+  UNIQUE KEY ux_student_course (student_id, course_id)
+);
+
+
+Indexes — what, why:
+====================
+* What: data structure (usually B-tree for InnoDB) that speeds searches, JOINs, ORDER BY and GROUP BY
+* Why: indexes reduce scanned rows and CPU time for reads. But they add cost on writes (INSERT/UPDATE/DELETE) and take disk space.
+
+Step-by-step: create, view, drop an index:
+==========================================
+-- 1) Create index (separate from table DDL)
+CREATE INDEX idx_student_lastname ON students (first_name(20)); 
+-- comment: index on prefix of first_name (useful if names are long); first 20 chars indexed
+
+-- or via ALTER TABLE
+ALTER TABLE students ADD INDEX idx_email (email);
+
+-- 2) Show indexes
+SHOW INDEX FROM students;
+
+-- 3) Drop index
+DROP INDEX idx_email ON students;  -- remove index
+
+Covering index example:
+=======================
+CREATE INDEX idx_enroll_cover ON enrollments (student_id, grade);
+
+-- If you do:
+SELECT grade FROM enrollments WHERE student_id = 1;
+-- The engine can read index only (no table lookup), which is faster — this is a "covering index".
+
+EXPLAIN — how to check whether index is used:
+=============================================
+EXPLAIN SELECT * FROM enrollments WHERE student_id = 1\G
+
+MySQL string & date functions (common ones + examples):
+=======================================================
+String functions
+================
+SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM students;
+SELECT SUBSTRING(email, 1, LOCATE('@', email)-1) AS username FROM students;
+SELECT LENGTH(first_name) AS bytes, CHAR_LENGTH(first_name) AS chars FROM students;
+SELECT LOWER(first_name), UPPER(last_name) FROM students;
+SELECT REPLACE('hi world','world','MySQL');
+
+
+Date/time functions
+===================
+SELECT CURDATE(), NOW(), CURRENT_TIMESTAMP;
+SELECT DATEDIFF(CURDATE(), dob) AS days_alive FROM students;
+-- Age in years (approx)
+SELECT FLOOR(DATEDIFF(CURDATE(), dob)/365) AS age FROM students;
+SELECT DATE_FORMAT(enroll_date, '%d-%b-%Y') AS enroll_fmt FROM enrollments;
+SELECT DATE_ADD(NOW(), INTERVAL 1 MONTH) AS next_month;
+SELECT TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age_years FROM students;
+
+Normalization (1NF, 2NF, 3NF, BCNF) — what and why
+==================================================
+Goal: reduce redundancy, avoid update/anomaly problems.
+
+1NF: atomic columns — each field contains atomic values (no repeating groups).
+
+Bad example: student table with columns course1, course2, course3 (repeating groups).
+
+Fix: separate enrollments table (we did).
+
+2NF: in addition to 1NF, no partial dependency on part of a composite primary key. Applies when you have composite keys.
+
+Example: If enrollments had PK (student_id, course_id) and we stored student_address in that table, it's partially dependent on student_id — move student_address to students.
+
+3NF: in addition to 2NF, no transitive dependency (non-key attribute depends on another non-key attribute).
+
+Example: If students stored city_id and city_name, city_name depends on city_id (move to cities table).
+
+BCNF: stronger than 3NF, resolves some corner cases where composite keys cause anomalies.
+
+Our schema (students, courses, enrollments) is normalized: single facts stored in appropriate tables.
+
+Denormalized table (bad example):
+=================================
+-- BAD: repeating groups, redundancy and update anomalies
+CREATE TABLE orders_denorm (
+  order_id INT,
+  customer_name VARCHAR(100),
+  customer_address VARCHAR(200),
+  product_1 VARCHAR(100),
+  product_1_qty INT,
+  product_2 VARCHAR(100),
+  product_2_qty INT,
+  order_date DATE
+);
+
+-- Problems:
+-- 1) Repeating product columns (not scalable)
+-- 2) Customer details repeated for every order (redundancy)
+
+
+1NF (atomic values)
+===================
+Fix repeating groups by moving products into their own rows.
+-- normalize products into order_items (1NF)
+CREATE TABLE customers (
+  customer_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  address VARCHAR(200)
+);
+
+CREATE TABLE orders (
+  order_id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT,
+  order_date DATE,
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+CREATE TABLE order_items (
+  order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT,
+  product_id INT,
+  quantity INT,
+  FOREIGN KEY (order_id) REFERENCES orders(order_id)
+  -- product_id -> products table
+);
+
+
+2NF (no partial dependencies)
+=============================
+Only relevant where composite primary keys exist. Example:
+Bad:
+====
+-- Suppose primary key is (order_id, product_id)
+CREATE TABLE order_items_bad (
+  order_id INT,
+  product_id INT,
+  product_description VARCHAR(200), -- depends only on product_id (partial dependency)
+  quantity INT,
+  PRIMARY KEY (order_id, product_id)
+);
+
+Move product_description to products table so order_items depends only on whole composite key.
+
+CREATE TABLE products (
+  product_id INT PRIMARY KEY,
+  product_description VARCHAR(200),
+  price DECIMAL(10,2)
+);
+
+CREATE TABLE order_items (
+  order_id INT,
+  product_id INT,
+  quantity INT,
+  PRIMARY KEY (order_id, product_id),
+  FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+
+3NF (no transitive dependencies):
+=================================
+CREATE TABLE employees_bad (
+  emp_id INT PRIMARY KEY,
+  emp_name VARCHAR(50),
+  dept_id INT,
+  dept_name VARCHAR(50)  -- dept_name depends on dept_id, not on emp_id
+);
+
+Fix:
+====
+CREATE TABLE departments (
+  dept_id INT PRIMARY KEY,
+  dept_name VARCHAR(50)
+);
+
+CREATE TABLE employees (
+  emp_id INT PRIMARY KEY,
+  emp_name VARCHAR(50),
+  dept_id INT,
+  FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+);
+Comment: dept_name removed from employees to avoid transitive dependency.
+
+BCNF (stronger than 3NF)
+========================
+* BCNF resolves rare cases where a non-primary attribute functionally determines part of a primary key.
+
+* If you encounter anomalies after 3NF, examine functional dependencies and split tables accordingly.
+
+Practical tip:
+==============
+* Normalize up to 3NF for OLTP systems. Denormalize selectively for read-heavy/reporting needs, but document why and what you denormalized.
+
+ACID PROPERTIES — definitions + concrete SQL examples:
+======================================================
+1. Atomicity — all-or-nothing:
+==============================
+Example: enroll a student and decrement seats — both must succeed or none:
+
+START TRANSACTION;
+-- lock and check seats
+SELECT seats FROM courses WHERE course_id = 1 FOR UPDATE;  -- lock row
+-- assume seats >= 1
+UPDATE courses SET seats = seats - 1 WHERE course_id = 1;
+INSERT INTO enrollments (student_id, course_id, enroll_date) VALUES (1,1, CURDATE());
+COMMIT;
+-- if something goes wrong, use ROLLBACK to undo both operations
+
+2.Consistency — constraints keep DB valid
+==========================================
+Foreign keys, unique constraints, CHECK constraints ensure DB moves from one valid state to another.
+
+Example: unique constraint on email prevents duplicate emails.
+
+3. Isolation — how concurrent transactions interact
+===================================================
+MySQL supports isolation levels: READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ (default for InnoDB), SERIALIZABLE.
+
+Example of dirty read under READ UNCOMMITTED:
+Session A:
+
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1; -- not committed
+
+
+Session B:
+
+SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SELECT balance FROM accounts WHERE id = 1; -- sees uncommitted changed balance (dirty read)
+
+
+Prevention: use READ COMMITTED or higher, or SELECT ... FOR UPDATE.
+
+Non-repeatable read & phantom reads are prevented progressively by higher levels. To set:
+
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+
+4. Durability — once committed, data persists
+=============================================
+COMMIT ensures changes are written to disk per InnoDB flush rules.
+
+Use proper backups and binary logs for crash recovery.
+Savepoints (partial rollback)
+=============================
+
+START TRANSACTION;
+UPDATE courses SET seats = seats - 1 WHERE course_id = 1;
+SAVEPOINT after_seat_decrement;
+INSERT INTO enrollments (student_id, course_id) VALUES (1,1);
+
+-- if something wrong with enrollment insert:
+ROLLBACK TO after_seat_decrement; -- undoes insert but keeps seat decrement
+COMMIT;
+
+
+Put it together — All-in-one example (schema + indexes + safe transaction)
+==========================================================================
+-- 1) Schema creation with types, keys, and indexes
+CREATE DATABASE IF NOT EXISTS school;
+USE school;
+
+CREATE TABLE students (
+  student_id INT AUTO_INCREMENT PRIMARY KEY,       -- primary key (auto-index)
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50),
+  email VARCHAR(150) NOT NULL UNIQUE,              -- unique constraint
+  dob DATE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE courses (
+  course_id INT AUTO_INCREMENT PRIMARY KEY,
+  course_name VARCHAR(100) NOT NULL,
+  credits TINYINT UNSIGNED DEFAULT 3,              -- small unsigned integer
+  seats SMALLINT UNSIGNED DEFAULT 30,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE enrollments (
+  enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  enroll_date DATE DEFAULT CURDATE(),
+  grade DECIMAL(5,2),                              -- grade with precision
+  CONSTRAINT fk_enroll_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+  CONSTRAINT fk_enroll_course  FOREIGN KEY (course_id)  REFERENCES courses(course_id)  ON DELETE CASCADE,
+  UNIQUE KEY ux_student_course (student_id, course_id),
+  INDEX idx_enroll_student (student_id),           -- index to speed lookups by student
+  INDEX idx_enroll_course (course_id)
+) ENGINE=InnoDB;
+
+-- 2) Example data
+INSERT INTO students (first_name, last_name, email, dob) VALUES
+('Asha','Kumar','asha.k@example.com','2002-04-12'),
+('Ravi','Sharma','ravi.s@example.com','2001-10-20');
+
+INSERT INTO courses (course_name, credits, seats) VALUES
+('Databases', 4, 25),
+('Data Structures', 3, 30);
+
+-- 3) Use EXPLAIN to verify index usage (example)
+EXPLAIN SELECT * FROM enrollments WHERE student_id = 1\G
+-- Check `key` column in EXPLAIN output: should show idx_enroll_student
+
+-- 4) Safe transaction to enroll a student (ACID in practice)
+START TRANSACTION;
+-- Lock course row to avoid race conditions
+SELECT seats FROM courses WHERE course_id = 1 FOR UPDATE; -- locks row
+-- Application checks the result; if seats <= 0, ROLLBACK
+UPDATE courses SET seats = seats - 1 WHERE course_id = 1;
+INSERT INTO enrollments (student_id, course_id, enroll_date) VALUES (1, 1, CURDATE());
+COMMIT;
+-- If anything failed before COMMIT, do ROLLBACK to keep database consistent
+
+
+
+DDL / DML / TCL / DRL (and DCL) — lists + examples:
+===================================================
+DDL (Data Definition Language) — changes schema:
+================================================
+CREATE TABLE, ALTER TABLE, DROP TABLE, TRUNCATE.
+
+ALTER TABLE students ADD COLUMN middle_name VARCHAR(50);
+DROP TABLE some_old_table;
+
+DML (Data Manipulation Language) — modify data:
+===============================================
+INSERT, UPDATE, DELETE, REPLACE.
+
+INSERT INTO students (first_name,last_name,email) VALUES ('Sita','Patel','sita.p@example.com');
+UPDATE students SET email = 'asha.kumar@example.com' WHERE student_id = 1;
+DELETE FROM enrollments WHERE enrollment_id = 5;
+
+
+TCL (Transaction Control Language):
+===================================
+START TRANSACTION / BEGIN, COMMIT, ROLLBACK, SAVEPOINT.
+
+START TRANSACTION;
+...updates...
+ROLLBACK; -- or COMMIT;
+
+DRL (Data Retrieval Language):
+==============================
+SELECT queries with filtering, aggregation, ordering.
+
+DCL (Data Control Language) — user privileges:
+==============================================
+GRANT, REVOKE.
+
+GRANT SELECT, INSERT ON school.* TO 'app_user'@'localhost';
+
+
+GROUP BY, aggregates, HAVING — examples:
+========================================
+Aggregate functions: COUNT(), SUM(), AVG(), MIN(), MAX(), GROUP_CONCAT().
+
+Example: students count per course:
+
+SELECT c.course_name, COUNT(e.student_id) AS students_count
+FROM courses c
+LEFT JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_name
+ORDER BY students_count DESC;
+
+
+Example: average grade per course, only those with >1 student:
+
+SELECT c.course_name, AVG(e.grade) AS avg_grade, COUNT(e.enrollment_id) AS cnt
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id
+HAVING COUNT(e.enrollment_id) > 1
+ORDER BY avg_grade DESC;
+
+Important: HAVING filters grouped results; WHERE filters rows before grouping.
+
+
+Joins — inner, left, right, full (workaround), cross, self:
+===========================================================
+INNER JOIN — rows present in both tables:
+
+SELECT s.student_id, s.first_name, c.course_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id;
+
+LEFT JOIN — all left rows + matched right rows (NULL if no match):
+
+SELECT s.first_name, c.course_name
+FROM students s
+LEFT JOIN enrollments e ON s.student_id = e.student_id
+LEFT JOIN courses c ON e.course_id = c.course_id;
+-- students with no enrollments will show course_name = NULL
+
+
+RIGHT JOIN — opposite of LEFT (rare; use LEFT by flipping tables).
+
+FULL OUTER JOIN — MySQL doesn't have direct FULL OUTER JOIN. Workaround:
+========================================================================
+SELECT s.student_id, s.first_name, c.course_name
+FROM students s
+LEFT JOIN enrollments e ON s.student_id = e.student_id
+LEFT JOIN courses c ON e.course_id = c.course_id
+
+UNION
+
+SELECT s.student_id, s.first_name, c.course_name
+FROM courses c
+LEFT JOIN enrollments e ON c.course_id = e.course_id
+LEFT JOIN students s ON e.student_id = s.student_id;
+
+
+CROSS JOIN — Cartesian product:
+===============================
+SELECT s.first_name, c.course_name
+FROM students s
+CROSS JOIN courses c;
+
+
+SELF JOIN — a table joined to itself (example: employees/managers). Example with students who referred other students (if such a column existed). Example structure:
+
+-- Example hypothetical table
+SELECT a.student_id AS student, b.student_id AS referred_student
+FROM students a JOIN students b ON a.student_id = b.referred_by;
+
+Useful constraints and options:
+===============================
+*NOT NULL, DEFAULT, CHECK (MySQL 8.0 enforces), UNIQUE, AUTO_INCREMENT.
+* Foreign key actions: ON DELETE CASCADE, ON UPDATE CASCADE, ON DELETE SET NULL.
+* Use EXPLAIN SELECT ... to examine query plans and see if indexes are used.
+
+Example index creation:
+CREATE INDEX idx_enroll_student ON enrollments(student_id);
+
+Check query plan:
+EXPLAIN SELECT * FROM enrollments WHERE student_id = 1;
+
+Example: a small transaction demonstrating ACID:
+================================================
+Use InnoDB. Scenario: enroll a student only if seats available.
+START TRANSACTION;
+-- read seats FOR UPDATE to lock row
+SELECT seats FROM courses WHERE course_id = 1 FOR UPDATE;
+
+-- assume seats >= 1
+UPDATE courses SET seats = seats - 1 WHERE course_id = 1;
+INSERT INTO enrollments (student_id, course_id) VALUES (1,1);
+
+-- if everything ok
+COMMIT;
+-- otherwise
+-- ROLLBACK;
+
+
+Quick cheat sheet (commands & functions)
+========================================
+Create DB: CREATE DATABASE name; USE name;
+
+Show: SHOW DATABASES; SHOW TABLES; SHOW COLUMNS FROM students;
+
+DDL: CREATE / ALTER / DROP / TRUNCATE
+
+DML: INSERT / UPDATE / DELETE / REPLACE
+
+DRL: SELECT ... FROM ... WHERE ...
+
+TCL: START TRANSACTION; COMMIT; ROLLBACK; SAVEPOINT x;
+
+Useful functions: CONCAT, SUBSTRING, REPLACE, LENGTH, LOWER, UPPER, DATE_FORMAT, DATEDIFF, DATE_ADD, TIMESTAMPDIFF
+
+Aggregates: COUNT, SUM, AVG, MIN, MAX, GROUP_CONCAT
+
+Joins: INNER JOIN, LEFT JOIN, RIGHT JOIN, CROSS JOIN, (FULL via UNION)
+
+
+Try these exercises (practice):
+===============================
+1. List students with no enrollments.
+
+SELECT * FROM students s
+LEFT JOIN enrollments e ON s.student_id = e.student_id
+WHERE e.enrollment_id IS NULL;
+
+2. Find the course with highest average grade.
+
+SELECT c.course_name, AVG(e.grade) AS avg_grade
+FROM courses c JOIN enrollments e ON c.course_id=e.course_id
+GROUP BY c.course_id
+ORDER BY avg_grade DESC LIMIT 1;
+
+3. Add a new column status to students with default active.
+
+ALTER TABLE students ADD COLUMN status ENUM('active','inactive') DEFAULT 'active';

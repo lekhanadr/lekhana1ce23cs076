@@ -1,0 +1,104 @@
+Table Commands:
+===============
+1. create
+2. alter
+3. drop
+4. insert into
+
+
+1. Create:
+==========
+Syntax:
+=======
+Create Table table_name(
+	column1 datatype constraints,
+	column2 datatype constraints,
+	....
+	table_constraints
+);
+
+ex:
+===
+create table employee(
+	employee_id int primary key auto_increment,
+	first_name varchar(50) not null,
+	last_name varchar(50),
+	hire_date date default '2024-01-5'/ (default_date()), --> if expression use () inside
+	email varchar(100) unique,
+	salary decimal(10,2) check (salary>0.0),
+	employee_status enum('active','on leave','in active') default 'active',
+	
+	created_at timestamp default current_timestamp,
+	updated_at timestamp default current_timestamp on update current_timestamp,
+	
+	foreign key (dept_id) references departments(dept_id),
+	
+	//primary key (columns..)--> only one as primary key but it will combine multiple columns as primary key
+);
+
+create table departments(
+	department_id INt primary key auto_increment,
+	department_name varchar(100) not nul;
+	created_at timestamp default current_timestamp;
+	updated_at timestamp default current_timestamp on update current_timestamp;
+);
+
+2. Alter:
+=========
+synatx:
+=======
+alter table table_name action;
+
+alter table employees
+add column description text; 
+
+* now consider you inserted two row if you alter then nul will inserted.
+
+alter table employees
+add column description text not null;
+
+* if you use not null then it will voileted (two ways to fix 
+	1. default value 
+	2. use null afer add constraint.
+)
+alter table employees
+add column description text not null;
+
+
+alter table employees
+modify column description varchar(300) not null;	
+
+alter table employees
+rename column description to dec;
+
+alter table employees
+drop column description;
+
+alter table employees
+add column description text not null;
+
+
+now we will add dept_id in employees:
+=====================================
+alter table employee
+add column dept_id INT;
+
+* upadte tabel data manually
+
+alter table employee
+add column dept_id INT not null;
+
+alter table employee
+add foreign key (dept_id) references departments(dept_id);
+
+
+
+3. drop:
+========
+drop table table_name;
+
+ex: drop table employees;
+drop table employees,departments; //based on fk
+
+drop table if exists table_name;
+

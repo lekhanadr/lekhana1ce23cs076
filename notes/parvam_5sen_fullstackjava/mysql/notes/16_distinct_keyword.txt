@@ -1,0 +1,28 @@
+Distinct keyword:
+=================
+
+syntax:
+=======
+select distinct column1, column2,.. from table_name;
+
+select distinct department from employees;
+
+using distinct on multiple columns:
+===================================
+select distinct department, salary from  employees;
+select count(distinct department) as unique_dpt_count from  employees;
+
+
+get unique salary in descendign order:
+======================================
+select distinct salary from employees order by salary desc;
+
+
+functions:
+==========
+select distinct contact(name,'-',depertment ) salary from employees order by salary desc;
+
+null values:
+============
+select distinct(department) from employees;
+* when large data then it will problem whe you not usign index.

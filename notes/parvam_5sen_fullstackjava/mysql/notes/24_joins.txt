@@ -1,0 +1,114 @@
+Joins:
+======
+* SQL join cluse is used to query and access data from multiple tables by establishing logical relationships b/w them.
+* It can access data from multiple atbles simultaneously using comman key values shared across different tables.
+
+Inner join/ join:
+=================
+* By default, join is equivalent to inner joiner and retrival records that have matching values in both tables.
+syntax:
+=======
+select col1,col2,... from table1 join table2 on table1.common_column = table2.common_column;
+
+example:
+========
+select students.name, courses.course_name from students join courses on students.course_id=course.course_id;
+
+
+SELECT s.Student_Name, e.Course
+FROM Students s
+INNER JOIN Enrollments e ON s.Student_ID = e.Student_ID;
+
+
+
+
+
+Left join:
+==========
+* Returns all records from the left table and the matched records from the right table,
+if no matchs found null values are retrned for columns from right table.
+
+syntax:
+=======
+select col1,col2,... from table1 left join table2 on table1.common_column = table2.common_column;
+
+example:
+========
+select students.name, courses.course_name from students left join courses on students.course_id=course.course_id;
+
+SELECT s.Student_Name, e.Course
+FROM Students s
+LEFT JOIN Enrollments e ON s.Student_ID = e.Student_ID;
+
+
+
+Right Join:
+===========
+* Returns all records from the right table and the matched records from the left table,
+if no matchs found null values are retrned for columns from left table.
+
+
+syntax:
+=======
+select col1,col2,... from table1 right join join table2 on table1.common_column = table2.common_column;
+
+example:
+========
+select students.name, courses.course_name from students right join courses on students.course_id=course.course_id;
+
+SELECT s.Student_Name, e.Course
+FROM Students s
+RIGHT JOIN Enrollments e ON s.Student_ID = e.Student_ID;
+
+
+
+Full outer join:
+================
+* One of the misundderstood types of joins in sql.
+* it takes columns and rows from both tables event those that do not match.
+* when two tables overlap full outer join output values from both columns.
+
+syntax:
+=======
+select col1,col2,... from table1 right full join table2 on table1.common_column = table2.common_column;
+
+
+example:
+========
+select students.name, courses.course_name from students full join courses on students.course_id=course.course_id;
+
+
+SELECT s.Student_Name, e.Course
+FROM Students s
+LEFT JOIN Enrollments e ON s.Student_ID = e.Student_ID
+UNION
+SELECT s.Student_Name, e.Course
+FROM Students s
+RIGHT JOIN Enrollments e ON s.Student_ID = e.Student_ID;
+
+
+CROSS JOIN:
+===========
+Definition: Returns every possible combination of rows between the two tables.
+
+SELECT s.Student_Name, e.Course
+FROM Students s
+CROSS JOIN Enrollments e;
+
+(3 students × 3 enrollment rows = 9)
+
+example: Show all students and courses, even if they aren’t linked
+==================================================================
+SELECT s.Student_Name, c.Course_Name
+FROM Students s
+LEFT JOIN StudentCourses sc 
+       ON s.Student_ID = sc.Student_ID
+LEFT JOIN Courses c 
+       ON sc.Course_ID = c.Course_ID
+UNION
+SELECT s.Student_Name, c.Course_Name
+FROM Students s
+RIGHT JOIN StudentCourses sc 
+        ON s.Student_ID = sc.Student_ID
+RIGHT JOIN Courses c 
+        ON sc.Course_ID = c.Course_ID;

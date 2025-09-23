@@ -1,0 +1,214 @@
+Stored Procedures:
+==================
+Definition: Stored procedures are precompiled SQL statements stored in the database. They allow encapsulating logic (like functions in programming languages) and can accept input/output parameters.
+
+Advantages:
+===========
+Reusability
+
+Security (can restrict direct table access)
+
+Performance (precompiled execution plan)
+
+Syntax:
+=======
+DELIMITER //
+
+CREATE PROCEDURE procedure_name (IN param1 INT, OUT param2 VARCHAR(50))
+BEGIN
+   -- SQL statements
+END //
+
+DELIMITER ;
+
+
+Gaming Club: List all active members in a specific game:
+========================================================
+DELIMITER //
+
+CREATE PROCEDURE GetActivePlayers(IN game_name VARCHAR(50))
+BEGIN
+    SELECT m.member_id, m.name, g.game_name
+    FROM members m
+    JOIN member_games mg ON m.member_id = mg.member_id
+    JOIN games g ON g.game_id = mg.game_id
+    WHERE g.game_name = game_name AND m.status = 'active';
+END //
+
+DELIMITER ;
+
+-- Call the procedure
+CALL GetActivePlayers('Chess');
+
+Triggers:
+=========
+Definition: Triggers are automatic actions executed before or after INSERT, UPDATE, or DELETE on a table.
+
+Syntax:
+=======
+CREATE TRIGGER trigger_name
+BEFORE|AFTER INSERT|UPDATE|DELETE
+ON table_name
+FOR EACH ROW
+BEGIN
+   -- SQL statements
+END;
+
+
+Gaming Club: Automatically set member joined_date if not provided:
+==================================================================
+CREATE TRIGGER SetJoinedDate
+BEFORE INSERT ON members
+FOR EACH ROW
+BEGIN
+    IF NEW.joined_date IS NULL THEN
+        SET NEW.joined_date = NOW();
+    END IF;
+END;
+
+
+Another example: Track changes in member points:
+================================================
+CREATE TRIGGER TrackPointsUpdate
+AFTER UPDATE ON member_games
+FOR EACH ROW
+BEGIN
+    INSERT INTO member_points_log(member_id, old_points, new_points, changed_at)
+    VALUES (OLD.member_id, OLD.points, NEW.points, NOW());
+END;
+
+Cursors:
+========
+Definition: Cursors allow row-by-row processing of query results in stored procedures (like iterating arrays in programming).
+Syntax:
+=======
+DECLARE cursor_name CURSOR FOR SELECT_statement;
+OPEN cursor_name;
+FETCH cursor_name INTO variable1, variable2;
+CLOSE cursor_name;
+
+
+Gaming Club: Award bonus points to all members in a specific game:
+
+DELIMITER //
+
+CREATE PROCEDURE AwardBonusPoints(IN game_name VARCHAR(50), IN bonus INT)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE memberId INT;
+    DECLARE cur CURSOR FOR 
+        SELECT m.member_id FROM members m
+        JOIN member_games mg ON m.member_id = mg.member_id
+        JOIN games g ON mg.game_id = g.game_id
+        WHERE g.game_name = game_name;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur INTO memberId;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        UPDATE member_games
+        SET points = points + bonus
+        WHERE member_id = memberId AND game_id = (SELECT game_id FROM games WHERE game_name = game_name);
+    END LOOP;
+    CLOSE cur;
+END //
+
+DELIMITER ;
+
+Call:
+=====
+CALL AwardBonusPoints('Chess', 10);
+
+Indexes:
+========
+Definition: Indexes speed up retrieval of rows on columns frequently used in WHERE, JOIN, ORDER BY.
+
+Types of Indexes:
+=================
+Primary Key: automatically indexed.
+
+Unique Index: ensures uniqueness.
+
+Regular Index: normal index for performance.
+
+Fulltext Index: text search.
+
+Composite Index: multiple columns.
+
+example:
+========
+-- Single column index
+CREATE INDEX idx_member_name ON members(name);
+
+-- Composite index (member + game)
+CREATE INDEX idx_member_game ON member_games(member_id, game_id);
+
+Check if index is used:
+=======================
+EXPLAIN SELECT * FROM member_games WHERE member_id = 5;
+
+Views:
+======
+Definition: Views are virtual tables created from a SELECT query. They simplify complex queries and enhance security.
+
+Syntax:
+CREATE VIEW view_name AS
+SELECT column1, column2
+FROM table
+WHERE condition;
+
+Example — Gaming Club: View all active members and their total points
+
+CREATE VIEW ActiveMemberPoints AS
+SELECT m.member_id, m.name, SUM(mg.points) AS total_points
+FROM members m
+JOIN member_games mg ON m.member_id = mg.member_id
+WHERE m.status = 'active'
+GROUP BY m.member_id, m.name;
+
+
+Query view:
+
+SELECT * FROM ActiveMemberPoints ORDER BY total_points DESC;
+
+
+
+Gaming Club Project Schema:
+===========================
+CREATE TABLE members (
+    member_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100) UNIQUE,
+    status ENUM('active','inactive') DEFAULT 'active',
+    joined_date DATE
+) ENGINE=InnoDB;
+
+CREATE TABLE games (
+    game_id INT AUTO_INCREMENT PRIMARY KEY,
+    game_name VARCHAR(50),
+    max_players INT
+) ENGINE=InnoDB;
+
+CREATE TABLE member_games (
+    member_game_id INT AUTO_INCREMENT PRIMARY KEY,
+    member_id INT,
+    game_id INT,
+    points INT DEFAULT 0,
+    FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (game_id) REFERENCES games(game_id) ON DELETE CASCADE,
+    UNIQUE KEY ux_member_game (member_id, game_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE member_points_log (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    member_id INT,
+    old_points INT,
+    new_points INT,
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+

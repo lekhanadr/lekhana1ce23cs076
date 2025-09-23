@@ -1,0 +1,44 @@
+Update Query:
+=============
+
+syntax:
+=======
+update tabble name
+set column1= value1, column2 = value2,...
+[where condition];
+
+ex:
+===
+reduce priec by 10 % for all:
+============================
+update products
+set price = price*0.9;
+
+* it will givee warnign (you upadte all records without where)
+
+update products
+set price = price*0.9
+where product_id > 0;
+
+
+for multipe columns:
+====================
+upadte products 
+set price = 6000, stock_quantity = 30
+where product_id=1;
+
+
+alter table products
+modify last_upadted time_stamp default current time_stamp on update current_timestamp;					
+
+
+give 90% off only for first two products:
+==========================================
+upadte products
+set price*0.1
+where product_id>0 limt 2;
+
+
+upadte product
+set product_id =1
+where product_id = 2; // now you are uplicating the product id  it is not possible

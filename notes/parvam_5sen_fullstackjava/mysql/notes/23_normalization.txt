@@ -1,0 +1,156 @@
+Normalization:
+==============
+Normalization is the process of organizing data in a database to reduce redundancy (duplicate data) and improve data integrity. It breaks large tables into smaller related tables and defines relationships between them.
+
+Goals of Normalization
+1. Eliminate redundant data.
+2. Ensure data dependencies make sense (only store related data in a table).
+3. Improve efficiency for updates, inserts, and deletes.
+
+Example: Without Normalization/Denormalized Table:
+==================================================
+-- Unnormalized data: multiple values in single columns
+CREATE TABLE StudentCourses_UNF (
+    Student_ID INT,
+    Student_Name VARCHAR(50),
+    Courses_Taken VARCHAR(100),     -- Multiple values stored as comma-separated
+    Instructor_Names VARCHAR(100)   -- Multiple values stored as comma-separated
+);
+
+INSERT INTO StudentCourses_UNF VALUES
+(1, 'John Doe',  'Math, Physics',       'Mr. Alan, Mrs. Smith'),
+(2, 'Jane Smith','Math',                'Mr. Alan'),
+(3, 'Alex Brown','Physics, Chemistry',  'Mrs. Smith, Dr. White');
+
+Problems:
+=========
+* Repetition of course and instructor names.
+* Hard to search for a single course (LIKE queries required).
+* Update anomalies: If “Mr. Alan” changes name, must update multiple rows.
+* Delete anomaly: Deleting a student might remove a course record completely.
+
+First normal form - 1nf:
+========================
+1. Each cell holds atomic (indivisible) values.
+2. Each record is unique (no duplicate rows).
+
+-- Students table: unique list of students
+CREATE TABLE Students_1NF (
+    Student_ID INT PRIMARY KEY,
+    Student_Name VARCHAR(50)
+);
+
+INSERT INTO Students_1NF VALUES
+(1, 'John Doe'),
+(2, 'Jane Smith'),
+(3, 'Alex Brown');
+
+-- Relationship table: each row = one course taken by a student with a single instructor
+CREATE TABLE StudentCourses_1NF (
+    Student_ID INT,
+    Course_Name VARCHAR(50),
+    Instructor_Name VARCHAR(50),
+    PRIMARY KEY (Student_ID, Course_Name)  -- composite key to ensure uniqueness
+);
+
+INSERT INTO StudentCourses_1NF VALUES
+(1, 'Math',      'Mr. Alan'),
+(1, 'Physics',   'Mrs. Smith'),
+(2, 'Math',      'Mr. Alan'),
+(3, 'Physics',   'Mrs. Smith'),
+(3, 'Chemistry', 'Dr. White');
+
+
+Second normal form - 2nf:
+=========================
+1. It must be in 1nf.
+2. no partial dependency.
+	* If the table has a composite primary key, no non-key column should depend on only part of the key.
+	* Every non-key column must depend on the whole primary key, not just a part.
+
+CREATE TABLE Courses_2NF (
+    Course_ID INT PRIMARY KEY,
+    Course_Name VARCHAR(50),
+    Instructor_Name VARCHAR(50)
+);
+
+INSERT INTO Courses_2NF VALUES
+(101, 'Math', 'Mr. Alan'),
+(102, 'Physics', 'Mrs. Smith'),
+(103, 'Chemistry', 'Dr. White');
+
+CREATE TABLE StudentCourses_2NF (
+    Student_ID INT,
+    Course_ID INT,
+    PRIMARY KEY (Student_ID, Course_ID),
+    FOREIGN KEY (Student_ID) REFERENCES Students_1NF(Student_ID),
+    FOREIGN KEY (Course_ID) REFERENCES Courses_2NF(Course_ID)
+);
+
+INSERT INTO StudentCourses_2NF VALUES
+(1, 101),
+(1, 102),
+(2, 101),
+(3, 102),
+(3, 103);
+
+Improvement: Instructor details now depend only on Course_ID.
+Issue left: Instructor names themselves might repeat if stored in multiple courses.
+
+Third normal form - 3nf:
+========================
+1. It must be in 2nf.
+2. No transitive dependency.
+	- Non-key columns must depend only on the primary key.
+	- No non-key column should depend on another non-key column.
+
+Transitive dependency:
+======================
+Occurs when A → B and B → C, so A indirectly determines C through B.
+ex:
+Course_ID → Course_Name ✅ (direct: a course ID determines its name).
+Course_Name → Instructor_Name ✅ (direct: a course name determines its instructor).
+Course_ID → Instructor_Name ✅ (direct: a course ID determines its instructor).
+
+
+CREATE TABLE Instructors_3NF (
+    Instructor_ID INT PRIMARY KEY,
+    Instructor_Name VARCHAR(50)
+);
+
+INSERT INTO Instructors_3NF VALUES
+(1, 'Mr. Alan'),
+(2, 'Mrs. Smith'),
+(3, 'Dr. White');
+
+CREATE TABLE Courses_3NF (
+    Course_ID INT PRIMARY KEY,
+    Course_Name VARCHAR(50),
+    Instructor_ID INT,
+    FOREIGN KEY (Instructor_ID) REFERENCES Instructors_3NF(Instructor_ID)
+);
+
+INSERT INTO Courses_3NF VALUES
+(101, 'Math', 1),
+(102, 'Physics', 2),
+(103, 'Chemistry', 3);
+
+
+student_course_system
+
++------------+          +-----------------+          +--------------+
+|  Students  |          | StudentCourses  |          |   Courses    |
+|------------|          |----------------|          |--------------|
+| Student_ID |<-------->| Student_ID      |          | Course_ID    |
+| Student_Name|         | Course_ID       |<-------->| Course_Name  |
++------------+          +-----------------+          | Instructor_ID|
+                                                      +--------------+
+                                                             |
+                                                             |
+                                                     +---------------+
+                                                     |  Instructors  |
+                                                     |---------------|
+                                                     | Instructor_ID |
+                                                     | Instructor_Name|
+                                                     +---------------+
+

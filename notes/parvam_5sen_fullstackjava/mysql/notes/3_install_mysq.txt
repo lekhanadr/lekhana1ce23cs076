@@ -1,0 +1,11 @@
+
+
+After installing in CLI:
+========================
+* The Mysql CLI will run in three different modes
+1. JS
+2. Py
+3. SQL
+
+use \sql -> to switch sql mode
+use \connect root@Localhoost:3306 -> to connect

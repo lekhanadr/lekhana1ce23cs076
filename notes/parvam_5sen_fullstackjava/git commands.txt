@@ -1,0 +1,15 @@
+1. clone the repo
+git clone "url"
+
+
+2. git status
+to check the status
+
+2. git add . 
+to track the files
+
+3. git commit -m "message"
+to commit changes
+
+4. git push origin main
+to push the code

@@ -1,0 +1,70 @@
+Select command:
+===============
+syntax:
+=======
+select column1, column2
+from table;
+
+ex:
+===
+select * from employees;
+select first_name, email from employees;
+
+aliasing:
+=========
+select first_name as 'First Name' from employees;
+
+where:
+======
+select * from employees where dept_name='IT';
+select * from employees where dept_name='IT' order by salary;
+
+orderBy:
+========
+select * from employees where dept_name='IT' order by salary desc;
+
+limit:
+======
+select * from employees limit 2;
+select * from employees where dept_name='IT' order by salary desc limit 1;
+
+unique dept:
+============
+select distinct department from employees;
+
+increment in salary:
+====================
+1.0 -> 100% no change
+1.1 -> 110%
+select first_name, last_name salary*1.1 as 'Salary after raise' from employees;
+
+concat:
+=======
+select contcat(first_name,' ',last_name)as 'Full name' from employees;
+
+need only Year:
+===============
+select Year(hire_date) from employees;
+
+round:
+======
+select Year(hire_date), round(salary,1) from employees where salary>700000;
+
+avg:
+====
+select avg(salary) from employees;
+
+select * from employees where salary>(select avg(salary) fro employees);
+
+
+count no of eemployees in department:
+=====================================
+select count(*),department from employees group by department;
+
+
+You can add expression also:
+============================
+select now() as 'time';
+selct 5*2;
+select length('hello');
+

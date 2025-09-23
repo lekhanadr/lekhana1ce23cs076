@@ -1,0 +1,26 @@
+Replace in mysql:
+=================
+The REPLACE statement in MySQL inserts a new row into a table.
+
+If a row already exists with the same primary key or unique key, MySQL deletes the old row and then inserts the new row.
+
+If no existing row matches, it simply performs an INSERT.
+
+Think of it as: DELETE the conflicting row → INSERT the new row.
+
+
+syntax:
+=======
+REPLACE INTO table_name (column1, column2, ...)
+VALUES (value1, value2, ...);
+
+ex:1
+REPLACE INTO employees (emp_id, name, salary)
+VALUES (1, 'John Doe', 55000.00);
+
+
+
+ex:2
+REPLACE INTO employees_backup (id, name, salary)
+SELECT id, name, salary
+FROM employees;

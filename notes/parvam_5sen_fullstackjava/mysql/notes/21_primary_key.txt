@@ -1,0 +1,50 @@
+Primary key:
+============
+-- they uniquely identified each rcord in a table
+-- they ensire no duplicate records exist
+-- they provide a reference point for relationships between tables.
+-- they optimize database perfoemance for record retrival.
+
+* in real word example a column as primary key we use auto increment to avoid confusion while inserting records 
+
+1. 
+CREATE TABLE employees (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Inline primary key
+    name VARCHAR(50),
+    salary DECIMAL(10,2)
+);
+
+2. 
+CREATE TABLE employees (
+    id INT AUTO_INCREMENT,
+    name VARCHAR(50),
+    salary DECIMAL(10,2),
+    PRIMARY KEY (id)  -- Table-level constraint
+);
+
+3. 
+CREATE TABLE order_items (
+    order_id INT,
+    product_id INT,
+    quantity INT,
+    PRIMARY KEY (order_id, product_id) -- Composite key --> combination of  two or more columns to uniquely identified.
+);
+
+4. 
+ALTER TABLE employees
+ADD PRIMARY KEY (id);
+
+
+Clustered Index:
+================
+A clustered index determines how the rows are physically stored on disk. The table’s data and the index are stored together.
+
+In InnoDB (MySQL’s default engine), the Primary Key is always the clustered index.
+
+Non-Clustered Index:
+====================
+A non-clustered index (called a secondary index in MySQL) is separate from the table’s data.
+
+It stores only the indexed column(s) + a pointer to the clustered index (the primary key).
+
+There can be many non-clustered indexes on a table.

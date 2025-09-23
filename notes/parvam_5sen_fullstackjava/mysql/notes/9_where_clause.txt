@@ -1,0 +1,68 @@
+Where clause:
+=============
+create database bookstore;
+use bookstore;
+
+create table books(
+	book_id int primary key,
+	title varchar(100),
+	author varchar(50),
+	price decimal(10,2),
+	publication_date Date,
+	category varchar(30),
+	in_stock int
+);
+
+
+select * from books where category = "technology";
+select title, price from books where price<30.00;
+select * from books where publication_date>='2023-03-01'
+
+select * from books where category ="technology" and price <30;
+select * from books where (category ="technology" or category="mystery") and price <30;
+
+select * from books where  category!='Technology';
+select * from books where  not category='Technology';
+
+finding null values:
+====================
+select * from books where author is null; -> get results
+select * from books where author is not null; -> get results
+select * from books where authore = null; -> get no results
+
+
+Pattern matching:
+=================
+select * from books where title like '%sql%';  -> in any place
+select * from books where title like 'the%'; -> starting
+select * from books where title like '%the'; -> ending
+
+* abovve are cas insensitive same for both caps and small
+
+select * from books where title like binary 'the%'; -> starting(it will compare case)
+
+
+exactly one chatracter:
+=======================
+select * from books where title like '_the%'; -> any one character followed the the and anything.
+
+between:
+========
+select * from books where price between 20 and 30;
+in:
+===
+select * from where in ('technology','mystery','education');
+
+select * from books where price between 20 and 30 and publication_date>='2023-01-01';
+
+
+
+select * from books where price >(select avg(price) from books)
+
+select * from where in (select category in books where in_stock>20);
+
+
+-- find all books pubblished in 2023 that cost less than the average book price.
+-- list all technologies books with 'data' in title that have  more than 50 in stack.
+-- find books that are either in the technology category with price >30 or in the mystery category with price <20
+-- List all books where the author's name contains either 'son' or 'th' and where published_after march 2023

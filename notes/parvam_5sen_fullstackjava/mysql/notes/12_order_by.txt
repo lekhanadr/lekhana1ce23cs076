@@ -1,0 +1,115 @@
+Order by Clause:
+================
+syntax:
+=======
+select column1, column2,...
+from table_name
+order by coumn [ASC|DESC];
+
+create database db12;
+use db12;
+
+create table products(
+	product_id int auto_increment primary key,
+	product_name varchar(200),
+	category varchar(30),
+	price decimal(10,2),
+	stock Int
+);
+
+1. sort by price
+================
+select * from products order by price; //defalut asc
+select * from products order by price desc;
+
+2. working with multiple columns:
+=================================
+select * from products order by category, price; 
+select * from products order by category desc, price desc;
+
+3. sorting by column positions:
+===============================
+select * from products order by 4; --> 4th column(price) not recomended
+
+4. sortign with where clause:
+============================= 
+select * from products where category = 'Electronics' order by price;
+
+5. with column name case sentitive
+select * from products order by binary category; 
+
+6. sorting function:
+====================
+select product_name ,length(product_name) from products order by length(product_name);
+select * from products order by day(last_updated);
+
+7. order bt limit:
+==================
+select * from products order by stock_quantity desc limit 1;
+
+
+custom sorting with field:
+==========================
+select * from products order by catrgory; //it will show in alphabatial order
+select * from products order by field((category,'Electronics','Appliances','Furniture')), price desc;
+
+custom sorting with case:
+=========================
+low stock and price high
+lets :
+======
+low stock -> less than 50 items
+good price -> greater than 200
+best deals -> low stock and good price
+
+selct * from products order by stock_quantity<=50 asc/desc;
+selct * from products order by (stock_quantity<=50 desc and price>=200) desc;
+
+or you can use case:
+====================
+
+syntax:
+=======
+select * 
+fro tabble_name
+order by 
+	case	
+		when condition1 then sort priority1
+		when condition2 then sort priority2
+		when condition3 then sort priority3
+		else default_sort_priority
+	end[asc|desc];
+
+ex:
+===
+selct * from products order by
+	case
+		when stock_quantity<=50 and price>=200 then 2
+		else 4
+	end desc;
+	
+	
+selct product_name, case
+		when stock_quantity<=50 and price>=200 then 2
+		else 4
+	end as priority 
+from products order by
+	case
+		when stock_quantity<=50 and price>=200 then 2
+		else 4
+	end desc;
+	
+
+null values handling:
+=====================
+* select * from products order by price is null; -> those who nul will come in below
+
+sortign with calculated columns:
+================================
+select * , price*stock_quantity from products order by price*stock_quantity.
+select * , price*stock_quantity as total_value from products order by total_value.--> you can use alias name also.
+
+
+to explain how the query is executing use explain:
+==================================================
+select * from products order by category , price;

@@ -1,0 +1,31 @@
+Schema:
+=======
+* A schema is the logical blueprint or str that defines how data is organized within a database.
+
+* it defines:
+=============
+1. The tables in the database.
+2. The relationships between those tables.
+3. The attributes(columns) within each table.
+3. The constraints and rules that the data 
+4. The data types for each field.
+
+Types of schema:
+================
+1. database Schema: The complete str of the entire database.
+2. tableschema: The str of specific tale including columns, datatypes and constraints.
+3. subschema: A portion of the database visible to specific users/ applications.
+
+Index:
+======
+* An index is like a table of contents in a book: instead of scanning every page to find a word, you look it up in the index to jump directly to the page. Similarly, SQL uses indexes to quickly locate rows in a table without scanning all data.
+
+Query:
+======
+* In SQL, a query is a request to perform an operation on a database
+
+Result Set:
+===========
+* The structured data returned by a database in response to a query.
+
+Example

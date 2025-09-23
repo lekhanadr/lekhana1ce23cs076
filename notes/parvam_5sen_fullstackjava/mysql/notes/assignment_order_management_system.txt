@@ -1,0 +1,4 @@
+Order_ID	Customer_Name	Items (Name-Qty)	Customer_City
+1			Alice			Pen-2, Book-1		Mumbai
+2			Bob				Book-3				Delhi
+3			Alice			Pen-5, Pencil-3, 	Book-2	Mumbai

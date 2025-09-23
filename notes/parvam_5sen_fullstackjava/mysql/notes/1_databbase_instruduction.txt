@@ -1,0 +1,80 @@
+What is Database?
+=================
+* A database is an organized collection of structured information, or data, typically stored electronically in a computer system
+* Databases allows for data to be easily accessed, managed, modified, updated and deleted.
+
+Key characteristics of databases
+================================
+1. Persistent storage: Data is stored over long term, surviving application restarts and system reboots.
+2. Structured and Orgaized: data is systematically arranged to avoid duplication an inconsistency.
+3. Easily Retrivable: Efficient methods exist for querying, filtering, and retrieving.
+4. Concurrent Access: Multiple isers and applications can use the database simultaneously without corruptign data.
+5. Security and Integrity: Access can be controlled and data can be protected against unauthorized user or corruption.
+
+Why use a database:
+===================
+1. to efficitently handle large volumes of data and ensure fast retrievel.
+2. to maintain a permanent record of information.
+3. to backup and recover data in case of hardware failures or data corruption.
+
+What is DBMS(database management system):
+=========================================
+* It is a software that manages a datbases, handling data storage, retrieval, updates and security.
+* It acts as an interface between database and users/applications.
+
+Examples:
+=========
+1. relational DBMS (RDBMS): Mysql, PostgreSQL, Oracle, SQL server.(Tables)
+2. NoSQL DBMS: MongoDB, Cassandra, DynamoDB.(Document)
+3. In-memory DBMS: Redis, Memcached.(RAM)
+
+Mysql:
+======
+* It is a popular open-source RDBMS.
+
+Introduction to the Relational Data Model:
+==========================================
+* The relational data model organizes data into one or  more tables(also known  as relations) with rows and columns
+* The idea, introduced by E.F Codd in 1970 revolutionized how databases are structured and queried.
+
+Key Concepts in the Relational Model:
+=====================================
+1. Tables(Relations): A table represents an entity or a concept for ex: EMployees, Customers etc...
+2. Columns(Attributes): COlumns defined the type of data stored. for ex: Employees have emp_id, first_name. 
+* All rows in the same column share the same type and meaning of data.
+3. Rows(Records): Each row in the table represents a single instance or a record. for ex: one rows in employee tble represents one specific empliyee
+4. Keys: Primary Key & Foreign Key.
+5. Relationships Between Tables: 1:1,1:M & M:M
+
+Real-world Example:
+===================
+Imagine a small company that needs to store about employees, departments and projects.
+*In employees table store dept_id, project_id.
+
+Primary Key:
+============
+* A Column or set of columns that uniquely identify each row in a table. for instance emp_id is a primary  key if it is uniquely identifiess every employee.
+
+Foreign Key:
+============
+* A column in one table that refers to the primary key in another table. for Example: a dept_id  in employee table that references the dept_id in department table.
+
+One to One:
+===========
+* Each row in Table A is related to exactly one row in Table B. For exaample one employee have one unique company car assigned.
+
+One to Many:
+============
+* One rrow in TableA can be associated with multiple rows in Table B. one department can have many employees.
+
+Many to Many:
+=============
+* Multiple rows in Tabble A can be assiciated with multiple rows in Table B. for ex: employees can work on multiple projects and projects can ahve multiple employee.
+
+Why the Relational Model?
+=========================
+1. Data integrity:
+==================
+* By using primary and foreign keys the relational model enforces referential integrity. That means no orphaned records should exist(eg an employee record that refer to department taht doe't exist)
+* Reduced Redudancy:Through the process of normalization.
+* Flexibility in Querying: SQL (str'ed Query Language)

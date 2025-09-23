@@ -1,0 +1,22 @@
+Mysql Aliasing:
+===============
+* temporary names assigned to database tales, columns or expressions to make them more readable.
+
+column aliasing:
+================
+select emp_id as 'id' from employees; 
+
+select salary*1.1 as new salary as 'id' from employees; 
+
+select contact(first_name,' ',last_name) as 'full_name' from employees;
+
+
+using table aliasing:
+=====================
+
+select e.id, e.salary from employees e;
+
+
+select e.first_name, d.dept_name from employees e join department d on e.dept_id = d.dept_id;
+
+* here "as" if optional

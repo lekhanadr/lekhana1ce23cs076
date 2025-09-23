@@ -1,0 +1,78 @@
+SQL:
+====
+* SQL is a pprogramming language that is used to manage and manioukate relational datavases.
+* SQL deals with structured data, that is data whihc is organized in tables.
+
+Main categories of SQL Commands:
+================================
+1. DDL(Data definition language)
+2. DML(Data manipulation language)
+3. DCL(Data control language)
+4. TCL(Transaction control language)
+
+Data Definition:
+================
+* SQL Provides commands to define that str of a database, collectively known as Data Defintion language.
+* some of DDL commands:
+1. Create: Used tocreated tables, ddatanase, indexes etc..
+2. Alter: Used tomodify the existing databases objects(eg: add or remobve columns)
+3. Drop: Used to delete entire databases, tales etc..
+
+Manilupating Data:
+==================
+* Data manipulation language(DML)
+* Tells to insert, upadte or delete
+
+* Select: Retrives data from one or more tables.
+* Insert: Adds new records in to a table.
+* Upadte: modifies existing records ina table.
+* Delete: Removes records from table.
+
+Data Control Language:
+======================
+* DCL commands are used to control access to data in a database.
+
+* Grant: Gives a user access privileges to database objects.
+* Revoke: Removes access privileges from user. 
+
+TCL:
+====
+* TCL commands are used to manage transactions withina database, ensure data integrity and consistency.
+1. Commit: Savel allchanges made during the current transaction.
+2. ROllback: Undoes changes made during the current transaction.
+3. Savepoint: Sets a point within transaction to which you can roll back.
+4. SET transaction: configures transaction properties.
+
+* The main advantage using sql is uniquity: nearly every relationaldb system supports SQL:
+
+
+SQL in MYSQL:
+=============
+* Mysql is one of the most popular opensource relational database systems that implements SQL. Here's How SQL typically is used with MYSQL.
+1. Write SQL statements in a client (Mysql CLI or GUI like Mysql Workbench).
+2. Receive results, either in text from (CLI) or tabular data(GUI).
+
+* Simple EX CLI or GUI 
+-- 1. Create a database
+CREATE DATABASE IF NOT EXISTS my_sample_db;
+-- 2. Use the created database
+USE my_sample_db;
+-- 3. Create a table within the database
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE
+);
+-- 4. Insert data into the table
+INSERT INTO users (name, email) VALUES
+('Alice Smith', 'alice.smith@example.com'),
+('Bob Johnson', 'bob.johnson@example.com'),
+('Charlie Brown', 'charlie.brown@example.com');
+-- 5. Fetch data from the table
+SELECT * FROM users;
+-- Optional: Fetch specific columns and filter data
+SELECT name, email FROM users WHERE id = 2;
+
+To display version:
+===================
+select version();

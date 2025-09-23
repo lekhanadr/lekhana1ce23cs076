@@ -1,0 +1,94 @@
+Data-types in Mysql:
+====================
+1. Numeric - Integers, Decimals
+2. String
+3. Date and Time
+
+1. Numbers:
+===========
+1. Integers:
+============
+a. TINYINT - 1
+b. SMALLINT - 2
+c. MEDIUMINT - 3
+d. INT/INTEGER - 4
+e. BIGINT - 8 - phone_no
+Floating Point:
+===============
+f. FLOAT(p) - 4 it will round off
+g. DOUBLE(p) - 8 it will round off
+Fixed Type:
+===========
+h. DECIMAL(p,s) - > defines precision(p)and scale 
+ex: DECIAML(8,2)->123456.78
+DECIAML(5.4) -> 1.2 --> 1.2000
+DECIAML(5,4) -> 1.23456543 ->it will round of till4 scale -> 1.2346
+
+default DECIAML(10,0)
+* if you store 1.2222 -> show warnign only store 1 (0 is the scale)
+* If you store more than 10 digit it will show warning
+
+Business/Finance Applications → DECIMAL is most used because exact precision is critical (e.g., storing money amounts: DECIMAL(10,2) for currency).
+
+Scientific/Engineering/Analytics → FLOAT (or DOUBLE) is most used because speed and range matter more than absolute precision.
+
+2. Strings:
+===========
+1. Char(n):
+===========
+* Fixed length string: stores string with fixed length of n characters.
+* If data is shorted then n, remainign length is padded with spaces.
+* max length 255
+* used to store codes that are fixed etc..
+name char(10)
+"mohan" ->"mohan     "
+2. Varchar(n):
+==============
+variable length(storage depends length of string plus 1 or 2 bytes for length info)
+* in varchar we use full indexing
+
+varchar(10)
+"mohan" ->"mohan"
+
+
+3. TinyText
+
+4. Text:
+========
+* in text we use prefix as indexing some characters.
+
+5. Mediumtext
+6. longtext
+7. ENUM('val1','val2'):
+=======================
+* A string object wiht a predefined of values.
+* single select from list
+8. SET('val1','val2'):
+======================
+* A string object with a predefined of values.
+* multiple select fro list
+ 
+ex: product_details
+
+3. Date and Time:
+=================
+1. Date:
+========
+--> YYYY-MM-DD 
+* '2025-01-01'
+
+2. DateTime:
+============
+* '2025-01-08 12:00:00'
+
+3. TimeStamp:
+=============
+* '2025-01:08 12:00:00' --> includes Time Zone
+
+4. Time:
+========
+* '12:34:20' --> without Time zone
+
+5. Year:
+========
+* '2025'

@@ -1,0 +1,71 @@
+Limit and Offset:
+=================
+
+Limit:
+======
+* to control the number of records returned by a query.
+* hepls to avoid the load on teh server to fetch all rows.
+
+create table products(
+	product_id int auto_increment primary key,
+	product_name varchar(200),
+	category varchar(30),
+	price decimal(10,2),
+	stock Int
+);
+
+
+limit:
+======
+select * from products order by id limit 2;
+
+offset:
+=======
+* to skip the n no of rows
+select * from products order by id limit 2 offset 2;
+
+
+pagination:
+===========
+* i have total 9 product per page i need to display 3 in 3 pages.
+syntax:
+=======
+select * from table limit [number],offset [number];
+
+or 
+
+select * from table limit[offset],[rowcount];
+
+for page 1
+select * from products limit 3 offset 0;
+
+for page 2
+select * from products limit 3 offset 3;
+
+for page 3
+select * from products limit 3 offset 6;
+
+
+or 
+
+select * from products limit 0,3;
+select * from products limit 3,3;
+select * from products limit 6,3;
+
+
+generic formula for pagination:
+===============================
+limit (page_number-1)*items_per_page, items_per_page;
+
+
+questions:
+==========
+1. top3 most expenssive products:
+=================================
+select * from products order by price desc offset 3;
+
+2. get 5 random products
+
+select *from products order by RAND() limit 5 ; // it is not recomendedin large data
+
+

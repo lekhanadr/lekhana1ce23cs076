@@ -1,0 +1,198 @@
+Foreign key:
+============
+* a foreign key is a columnor set of columns in one table that refrers to the primary key in another table.
+* It creates a link between the two tables, establishing a parent-child relationship.
+* parent table: contains the primary key that is referenced
+* child table: contains the foreign key that references the primary key of the parent table.
+* purpose of fk: referential integrity, data validation,str'd relationship 
+
+ex:
+===
+🧠 Example Scenario
+
+We have:
+
+Parent table: departments (stores department info, with dept_id as primary key).
+
+Child table: employees (each employee belongs to one department via a foreign key).
+
+Referential Integrity Rules:
+============================
+1. Child must reference a valid parent
+2. Cannot insert invalid child row
+3. Cannot delete parent if referenced by child
+4. Update parent (if ON UPDATE CASCADE)
+
+
+types of relationships:
+=======================
+One-to-One (1:1) Relationship
+Definition:
+
+Each row in Table A corresponds to exactly one row in Table B, and vice versa.
+
+Example:
+
+Table employees and Table employee_passports
+
+employees
+emp_id | emp_name
+-------+---------
+1      | Alice
+2      | Bob
+
+employee_passports
+passport_id | emp_id | passport_number
+------------+-------+----------------
+101         | 1     | P12345
+102         | 2     | P67890
+
+CREATE TABLE employee_passports (
+    passport_id INT PRIMARY KEY,
+    emp_id INT UNIQUE,
+    passport_number VARCHAR(20),
+    FOREIGN KEY (emp_id) REFERENCES employees(emp_id)
+);
+
+
+One-to-Many (1:N) Relationship
+Definition:
+
+A row in Table A can relate to multiple rows in Table B, but a row in Table B relates to only one row in Table A.
+Example:
+
+Table departments and Table employees
+
+departments
+dept_id | dept_name
+--------+----------
+1       | HR
+2       | IT
+
+employees
+emp_id | emp_name | dept_id
+-------+---------+--------
+101    | Alice   | 1
+102    | Bob     | 2
+103    | Charlie | 2
+
+impl:
+=====
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+);
+
+
+
+Many-to-Many (M:N) Relationship
+Definition:
+
+A row in Table A can relate to many rows in Table B, and vice versa.
+
+Implemented using a junction table (also called a bridge table).
+Example:
+
+Table students and Table courses
+
+students
+student_id | student_name
+-----------+-------------
+1          | Alice
+2          | Bob
+
+courses
+course_id | course_name
+----------+-------------
+101       | Math
+102       | Science
+
+student_courses (junction table)
+student_id | course_id
+-----------+----------
+1          | 101
+1          | 102
+2          | 101
+
+impl:
+=====
+CREATE TABLE student_courses (
+    student_id INT,
+    course_id INT,
+    PRIMARY KEY (student_id, course_id),
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+
+Adding a Foreign Key Inline (During Table Creation):
+====================================================
+CREATE TABLE child_table (
+    child_id INT PRIMARY KEY,
+    parent_id INT,
+    FOREIGN KEY (parent_id) REFERENCES parent_table(parent_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+ex:
+===
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+);
+
+Adding a Foreign Key Using ALTER TABLE (Existing Table):
+========================================================
+ALTER TABLE child_table
+ADD CONSTRAINT fk_name
+FOREIGN KEY (column_name) REFERENCES parent_table(parent_column)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE;
+
+ex:
+===
+ALTER TABLE employees
+ADD CONSTRAINT fk_emp_dept
+FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+ON UPDATE CASCADE;
+
+Dropping a Foreign Key
+Syntax:
+=======
+ALTER TABLE child_table
+DROP FOREIGN KEY fk_name;
+
+ex:
+===
+ALTER TABLE employees
+DROP FOREIGN KEY fk_emp_dept;
+
+* Important: You must know the foreign key’s name.
+* If MySQL auto-generated it (like employees_ibfk_1), you need that name.
+
+How to Find Auto-Generated Foreign Key Names:
+=============================================
+SHOW CREATE TABLE employees;
+
+Output will show the table definition and all foreign key constraints with their names.
+
+Example output snippet:
+CONSTRAINT `employees_ibfk_1` FOREIGN KEY (`dept_id`) REFERENCES `departments` (`dept_id`)
+
+
+Example with Employees giving custom constraint name:
+=====================================================
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    dept_id INT,
+    CONSTRAINT fk_emp_dept   -- custom FK name
+    FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+);

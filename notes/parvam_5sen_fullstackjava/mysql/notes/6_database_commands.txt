@@ -1,0 +1,31 @@
+Database Commands:
+==================
+1. craete:
+==========
+create dtabse <name_of_db>;
+
+ex: craete database students;
+
+* case insensitive you add any samll, caps in between.
+
+2. show all databases:
+======================
+show databses;
+
+* use ; when multipe commads
+
+3. select database:
+===================
+use <db_name>
+
+ex: use students;
+
+4. to show which db selected:
+============================
+select database();--> function of current db selected.
+
+5.to drop the database:
+=======================
+drop database <db_name>;
+
+ex: drop database students;

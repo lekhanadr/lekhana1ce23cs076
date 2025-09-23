@@ -1,0 +1,33 @@
+Comparision Operators:
+======================
+=,!=,<,>,<=,>=
+
+create table products(
+	product_id int auto_increment primary key,
+	product_name varchar(200),
+	category varchar(30),
+	price decimal(10,2),
+	stock Int
+);
+
+1. get product price extctly 600
+select * from products where price =600;
+
+2. not 600
+select * from products where price != 600 /  not price = 600 / price <> 600;
+
+3.<500
+
+select * from products where price < 500;
+
+4. string
+select * from orders where category = "technology";
+select * from products where name>'mouse';// dictionary afetr n (world by word)
+select '100'<'2'; 0/p -> 1 
+select 100<'234dsfksf'--> 1(100>234) myssql stop when it find string.
+select 100<'34jsdh' -> 0 (100<34)
+
+5. date
+select * from orders where placed_order < '2025-02-01';
+
+

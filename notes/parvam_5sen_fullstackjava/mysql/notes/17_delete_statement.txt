@@ -1,0 +1,81 @@
+Delete statement:
+=================
+* removes records from the table.
+syntax:
+=======
+delete from table_name where condition;
+
+
+delete from products where product_id = 10;
+
+delete from products where price < 20;  // by defaultinmyql safe mode ison liwk without using where clause it will show warning to turn off go tto options and unckec safe 
+
+* when you ar edeleteign first select * and then delete for safer.
+
+select * from products where price >50;
+
+delete from products where price >50;
+
+
+you can use ro show command to craete table using following:
+============================================================
+show(create table orders);
+
+
+consider we have orders table:
+==============================
+* in this table im storign order_id, product_id and quantity
+delet from products where product_id = 20;
+* you will get error update or delete for paremt row  is not possibel because it is referenced in ordders table
+
+
+
+alter table orders drop foreign key orders_ibfk_1;
+
+alter tale orders
+add constraint product_fk
+foreign ket  (product_id) references products(product_id) on delete cascade;
+
+delet from products where product_id = 20; --> now it will work
+
+* to confirm 
+
+select * from products;
+slect * from orders;
+
+* when deletd i need to mak eit has null;
+
+alter table orders drop foreign key orders_ibfk_1;
+
+alter tale orders
+add constraint product_fk
+foreign ket  (product_id) references products(product_id) on delete set null;
+
+delet from products where product_id = 20; --> now it will work
+
+* to confirm 
+
+select * from products;
+slect * from orders;
+
+
+* consider you have 4 row sina table and delete all rows an dinswerted new row what is teh primanry key product_id starts with 5 not 1 it won't reset.
+
+truncate:
+=========
+* drop all rows and keeps only the str of a table.
+* truncate will drop the table eand craete a new table.
+truncate table employees;
+
+
+* consider you have 4 row sina table and delete all rows an dinswerted new row what is teh primanry key product_id starts 1 (use ued truncate).
+
+
+delete from employees v/s truncate table employees:
+===================================================
+* to delet specific recored go with delete.
+* delet from employees; is slower compare with truncate
+
+* to delet all records go with truncate.
+* truncate table employees; is fater compare with delete 
+

@@ -1,0 +1,6 @@
+Logical operators:
+==================
+* Logical operators are used in sql to filter records based on multiple condition in the where clause.
+AND ->  return records where both conditions are true.
+OR -> return records where at least one condition is True.
+NOT -> Negates a condition(returns the opposite result).

@@ -1,0 +1,182 @@
+Functions in Mysql:
+===================
+String functions:
+=================
+1. contact
+==========
+select contact(first_name,' ',last_name) as 'full_name' from students;
+
+2. length:
+==========
+select first_name,length(first_name) as 'length' from students;
+
+3.upper and lower:
+==================
+select first_name,upper(first_name) as 'upper' from students;
+
+select first_name,lower(first_name) as 'lower' from students;
+
+4. trim:
+========
+* used ot trim start and end white spaces in the o/p
+
+select trim(upper("          ok         "))as sample;
+
+5. substring:
+=============
+syntax:
+=======
+substring(col_name, starting index, ending index)
+
+select first_name,substring(first_name,1,4) as 'length' from students;
+
+5.indexof:
+==========
+select first_name, locate('a',first_name) from students;
+
+6. replace:
+===========
+select first_name, replace(email,'example.com', 'paarvam.com') from students;
+
+7. reverse:
+===========
+select first_name, reverse(first_name) from students;
+
+8. extract:
+===========
+select first_name, left(first_name,2) as first_two, right(first_name,2) as last_two from students;
+
+9. ascii:
+=========
+select ascii('a');
+select ascii('akjkdj'); --> it will giev first letter ascii.
+
+10. use field for custom sorting.
+
+11. to see size no of character in the string:
+==============================================
+select char_length("hello");
+
+12.soundx:
+==========
+* based on the our pronunciation ftech the similar data.
+
+selecy * from students where soundx('jane') = soundx(first_name);
+
+
+
+Numeric functions:
+==================
+-- basic mathematical functions
+-- rounding functions
+-- trigonametric functions
+-- logarthmic and exponent functions.
+-- bit wise functions.
+
+1.basic mathematical functions:
+===============================
+a. absolute:
+============
+* give +ve value enevn if -ve
+select num_value, abs(num_vaule) as absolute_value from numbers;
+
+b. ceil and floor:
+==================
+select num_value, ceil(num_value) as round_up, floor(num_value) as round_down from numbers;
+
+c. round:
+=========
+* it will round for give decimal length
+select num_value, round(num_value, 2) as round_2 from numbers;
+
+d. truncate:
+============
+* it wont round but give up to specified length of decimal
+select num_value, truncate(num_value, 2) as round_2 from numbers;
+
+e.pow:
+======
+select num_value, power(num_value, 2) as squared from numbers;
+
+f. remainder:
+=============
+select mod(10,2);
+
+g. sqrt:
+========
+select num_value, sqrt(abs(num_value)) as sqrt from numbers;
+
+select num_value, sin(num_value) from numbers;
+
+select pi();
+
+
+Bitwise:
+========
+* work with integers not decimal
+
+Bit_and
+bit_or
+bit_xor
+
+Date time:
+==========
+Date - YYYY-MM-DD
+DateTime - YYYY-MM-DD HH:MM:SS
+Timestamp- YYYY-MM-DD HH:MM:SS
+time - HH:MM:SS
+year - YYYY
+
+functions:
+==========
+select now();
+select curdate();
+select curtime();
+select year(now());
+select month(now());
+select day(now());
+select hour(now());
+select minute(now());
+select secound(now());
+
+select date_format('2025-03-03','%W, %M, %e, %Y');
+select date_format('2025-03-03','%e/%Y'); -> 03/2025
+select date_format('2025-03-03','%e/%M/%Y'); -> 03/March/2025
+select date_format('2025-03-03','%e/%m/%Y'); -> 03/03/2025
+
+
+select date_add('2025-03-03',interval 7 day);
+select date_add('2025-03-03',interval 7 month);
+
+select date_sub('2025-03-03',interval 7 month);
+
+
+select datediff('2025-03-03','2025-6-03');
+
+
+-- jan 1 1970 at 00:00:00 UTC
+
+* to see hwo much secound is done till now
+
+select Unix_timestamp('2025-03-03') as unix_time;--> give sec from date.
+select from_unixtime(12345678765) as real_date;--> give date from sec.
+
+
+q: querying the orders in the last 7 days.
+
+select * from orders wher order_date>= date_sub(now(),interval 7 day); 
+
+
+aggregate functions:
+====================
+* used to perform calculation onmultiple rows of data and return a single summarized response.
+--count()
+--sum()
+--abg()
+--min()
+--max()
+
+* thsi will used in group by and having clause mainly.
+
+
+
